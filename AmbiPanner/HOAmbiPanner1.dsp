@@ -26,8 +26,8 @@ with {
   // azimuth and elevation panners, smooth to "dezipper" controls.
 // azi = (math.PI/180.0)*hslider("[1]azi[unit:deg]", 0, -180, 180, 1) : dezipper;
 // elev = (math.PI/180.0)*hslider("[2]ele[unit:deg]", 0,  -90,  90, 1) : dezipper;
-azi = hslider("[1]azi[unit:rad]", 0,  -3.1415926535898 , 3.1415926535898  , 0.0000001) : dezipper;
-elev = hslider("[2]ele[unit:rad]", 0, -1.5707963267949 , 1.5707963267949 ,  0.0000001) : dezipper;
+azi = hslider("[1]azi[unit:rad]", 0,  -3.1415926535898 , 3.1415926535898  , 0.0000001); //: dezipper; // remove deipper for schoa
+elev = hslider("[2]ele[unit:rad]", 0, -1.5707963267949 , 1.5707963267949 ,  0.0000001); //: dezipper; // remove deipper for schoa
 
 
   // spherical to cartesian
