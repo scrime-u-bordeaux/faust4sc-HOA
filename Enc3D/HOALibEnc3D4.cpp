@@ -2,8 +2,8 @@
 author: "Pierre Guillot, Eliott Paris, Julien Colafrancesco"
 copyright: "2012-2015 Guillot, Paris, Colafrancesco, CICM, Labex Arts H2H, U. Paris 8"
 name: "HOALibEnc3D4"
-Code generated with Faust 2.5.23 (https://faust.grame.fr)
-Compilation options: cpp, -scal -ftz 0
+Code generated with Faust 2.15.11 (https://faust.grame.fr)
+Compilation options: -double -ftz 0
 ------------------------------------------------------------ */
 
 #ifndef  __mydsp_H__
@@ -66,6 +66,7 @@ Compilation options: cpp, -scal -ftz 0
 #define __dsp__
 
 #include <string>
+#include <vector>
 
 #ifndef FAUSTFLOAT
 #define FAUSTFLOAT float
@@ -173,11 +174,11 @@ class dsp {
          *
          * @param date_usec - the timestamp in microsec given by audio driver.
          * @param count - the number of frames to compute
-         * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT samples (eiher float, double or quad)
-         * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT samples (eiher float, double or quad)
+         * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT samples (either float, double or quad)
+         * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT samples (either float, double or quad)
          *
          */
-        virtual void compute(double date_usec, int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) { compute(count, inputs, outputs); }
+        virtual void compute(double /*date_usec*/, int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) { compute(count, inputs, outputs); }
        
 };
 
@@ -229,6 +230,9 @@ class dsp_factory {
         virtual std::string getName() = 0;
         virtual std::string getSHAKey() = 0;
         virtual std::string getDSPCode() = 0;
+        virtual std::string getCompileOptions() = 0;
+        virtual std::vector<std::string> getLibraryList() = 0;
+        virtual std::vector<std::string> getIncludePathnames() = 0;
     
         virtual dsp* createDSPInstance() = 0;
     
@@ -360,8 +364,8 @@ class UI
 
 #include <algorithm>
 #include <map>
+#include <cstdlib>
 #include <string.h>
-#include <stdlib.h>
 
 /************************************************************************
  FAUST Architecture File
@@ -402,33 +406,33 @@ using std::min;
 
 struct XXXX_Meta : std::map<const char*, const char*>
 {
-    void declare(const char* key, const char* value) { (*this)[key]=value; }
+    void declare(const char* key, const char* value) { (*this)[key] = value; }
 };
 
 struct MY_Meta : Meta, std::map<const char*, const char*>
 {
-    void declare(const char* key, const char* value) { (*this)[key]=value; }
+    void declare(const char* key, const char* value) { (*this)[key] = value; }
 };
 
-inline int lsr(int x, int n)	{ return int(((unsigned int)x) >> n); }
+static int lsr(int x, int n) { return int(((unsigned int)x) >> n); }
 
-inline int int2pow2(int x)		{ int r = 0; while ((1<<r) < x) r++; return r; }
+static int int2pow2(int x) { int r = 0; while ((1<<r) < x) r++; return r; }
 
-inline long lopt(char* argv[], const char* name, long def)
+static long lopt(char* argv[], const char* name, long def)
 {
 	int	i;
-	for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return atoi(argv[i+1]);
+    for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return std::atoi(argv[i+1]);
 	return def;
 }
 
-inline bool isopt(char* argv[], const char* name)
+static bool isopt(char* argv[], const char* name)
 {
 	int	i;
 	for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return true;
 	return false;
 }
 
-inline const char* lopts(char* argv[], const char* name, const char* def)
+static const char* lopts(char* argv[], const char* name, const char* def)
 {
 	int	i;
 	for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return argv[i+1];
@@ -613,9 +617,12 @@ private:
 #define FAUSTFLOAT float
 #endif 
 
+/* link with : "" */
+#include <algorithm>
 #include <cmath>
+#include <math.h>
 
-float mydsp_faustpower2_f(float value) {
+static double mydsp_faustpower2_f(double value) {
 	return (value * value);
 	
 }
@@ -632,8 +639,25 @@ class mydsp : public dsp {
 	
  private:
 	
+	double fConst0;
+	double fConst1;
+	double fConst2;
 	FAUSTFLOAT fHslider0;
 	FAUSTFLOAT fHslider1;
+	double fConst3;
+	double fConst4;
+	double fConst5;
+	double fConst6;
+	double fConst7;
+	double fConst8;
+	double fConst9;
+	double fConst10;
+	double fConst11;
+	double fConst12;
+	double fConst13;
+	double fConst14;
+	double fConst15;
+	double fConst16;
 	int fSamplingFreq;
 	
  public:
@@ -795,12 +819,29 @@ class mydsp : public dsp {
 	
 	virtual void instanceConstants(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
+		fConst0 = double(tgamma(1.0));
+		fConst1 = double(tgamma(3.0));
+		fConst2 = (1.4142135623730951 * std::sqrt((3.0 * (fConst0 / fConst1))));
+		fConst3 = double(tgamma(5.0));
+		fConst4 = (1.4142135623730951 * std::sqrt((5.0 * (fConst0 / fConst3))));
+		fConst5 = double(tgamma(2.0));
+		fConst6 = double(tgamma(4.0));
+		fConst7 = (4.2426406871192857 * std::sqrt((5.0 * (fConst5 / fConst6))));
+		fConst8 = double(tgamma(7.0));
+		fConst9 = (1.4142135623730951 * std::sqrt((7.0 * (fConst0 / fConst8))));
+		fConst10 = double(tgamma(6.0));
+		fConst11 = (7.0710678118654755 * std::sqrt((7.0 * (fConst5 / fConst10))));
+		fConst12 = (0.70710678118654757 * std::sqrt((7.0 * (fConst1 / fConst3))));
+		fConst13 = (1.4142135623730951 * std::sqrt((9.0 * (fConst0 / double(tgamma(9.0))))));
+		fConst14 = (9.8994949366116654 * std::sqrt((9.0 * (fConst5 / double(tgamma(8.0))))));
+		fConst15 = (0.70710678118654757 * std::sqrt((9.0 * (fConst1 / fConst8))));
+		fConst16 = (0.47140452079103168 * std::sqrt((9.0 * (fConst6 / fConst10))));
 		
 	}
 	
 	virtual void instanceResetUserInterface() {
-		fHslider0 = FAUSTFLOAT(0.0f);
-		fHslider1 = FAUSTFLOAT(0.0f);
+		fHslider0 = FAUSTFLOAT(0.0);
+		fHslider1 = FAUSTFLOAT(0.0);
 		
 	}
 	
@@ -812,6 +853,7 @@ class mydsp : public dsp {
 		classInit(samplingFreq);
 		instanceInit(samplingFreq);
 	}
+	
 	virtual void instanceInit(int samplingFreq) {
 		instanceConstants(samplingFreq);
 		instanceResetUserInterface();
@@ -821,6 +863,7 @@ class mydsp : public dsp {
 	virtual mydsp* clone() {
 		return new mydsp();
 	}
+	
 	virtual int getSampleRate() {
 		return fSamplingFreq;
 		
@@ -830,10 +873,10 @@ class mydsp : public dsp {
 		ui_interface->openVerticalBox("HOALibEnc3D4");
 		ui_interface->declare(&fHslider0, "1", "");
 		ui_interface->declare(&fHslider0, "unit", "rad");
-		ui_interface->addHorizontalSlider("azi", &fHslider0, 0.0f, -3.14159274f, 3.14159274f, 1.00000001e-07f);
+		ui_interface->addHorizontalSlider("azi", &fHslider0, 0.0, -3.1415926535898002, 3.1415926535898002, 9.9999999999999995e-08);
 		ui_interface->declare(&fHslider1, "2", "");
 		ui_interface->declare(&fHslider1, "unit", "rad");
-		ui_interface->addHorizontalSlider("ele", &fHslider1, 0.0f, -1.57079637f, 1.57079637f, 1.00000001e-07f);
+		ui_interface->addHorizontalSlider("ele", &fHslider1, 0.0, -1.5707963267949001, 1.5707963267949001, 9.9999999999999995e-08);
 		ui_interface->closeBox();
 		
 	}
@@ -865,65 +908,64 @@ class mydsp : public dsp {
 		FAUSTFLOAT* output22 = outputs[22];
 		FAUSTFLOAT* output23 = outputs[23];
 		FAUSTFLOAT* output24 = outputs[24];
-		float fSlow0 = (float(fHslider0) + 3.14159274f);
-		float fSlow1 = cosf((1.57079637f - float(fHslider1)));
-		float fSlow2 = mydsp_faustpower2_f(fSlow1);
-		float fSlow3 = sqrtf((1.0f - fSlow2));
-		float fSlow4 = (0.0f - fSlow3);
-		float fSlow5 = (sinf(fSlow0) * fSlow4);
-		float fSlow6 = (1.0f * fSlow5);
-		float fSlow7 = (fSlow4 * cosf(fSlow0));
-		float fSlow8 = (1.0f * fSlow7);
-		float fSlow9 = (fSlow4 * (0.0f - (3.0f * fSlow3)));
-		float fSlow10 = (2.0f * fSlow0);
-		float fSlow11 = sinf(fSlow10);
-		float fSlow12 = (0.288675129f * (fSlow9 * fSlow11));
-		float fSlow13 = (1.73205078f * (fSlow5 * fSlow1));
-		float fSlow14 = ((3.0f * fSlow2) + -1.0f);
-		float fSlow15 = (0.5f * fSlow14);
-		float fSlow16 = (1.73205078f * (fSlow7 * fSlow1));
-		float fSlow17 = cosf(fSlow10);
-		float fSlow18 = (0.288675129f * (fSlow9 * fSlow17));
-		float fSlow19 = (fSlow9 * (0.0f - (5.0f * fSlow3)));
-		float fSlow20 = (3.0f * fSlow0);
-		float fSlow21 = sinf(fSlow20);
-		float fSlow22 = (0.0527046286f * (fSlow19 * fSlow21));
-		float fSlow23 = (fSlow9 * fSlow1);
-		float fSlow24 = (0.645497203f * (fSlow23 * fSlow11));
-		float fSlow25 = ((15.0f * fSlow2) + -3.0f);
-		float fSlow26 = (0.204124153f * (fSlow5 * fSlow25));
-		float fSlow27 = ((2.5f * fSlow14) + -2.0f);
-		float fSlow28 = (0.333333343f * (fSlow27 * fSlow1));
-		float fSlow29 = (0.204124153f * (fSlow7 * fSlow25));
-		float fSlow30 = (0.645497203f * (fSlow23 * fSlow17));
-		float fSlow31 = cosf(fSlow20);
-		float fSlow32 = (0.0527046286f * (fSlow19 * fSlow31));
-		float fSlow33 = (fSlow19 * (0.0f - (7.0f * fSlow3)));
-		float fSlow34 = (4.0f * fSlow0);
-		float fSlow35 = (0.00704295235f * (fSlow33 * sinf(fSlow34)));
-		float fSlow36 = (fSlow19 * fSlow1);
-		float fSlow37 = (0.139443338f * (fSlow36 * fSlow21));
-		float fSlow38 = (fSlow9 * ((35.0f * fSlow2) + -5.0f));
-		float fSlow39 = (0.0372678004f * (fSlow38 * fSlow11));
-		float fSlow40 = ((3.5f * fSlow25) + -12.0f);
-		float fSlow41 = (0.105409257f * ((fSlow5 * fSlow40) * fSlow1));
-		float fSlow42 = (0.25f * ((2.33333325f * (fSlow27 * fSlow2)) - (1.5f * fSlow14)));
-		float fSlow43 = (0.105409257f * ((fSlow7 * fSlow40) * fSlow1));
-		float fSlow44 = (0.0372678004f * (fSlow38 * fSlow17));
-		float fSlow45 = (0.139443338f * (fSlow36 * fSlow31));
-		float fSlow46 = (0.00704295235f * (fSlow33 * cosf(fSlow34)));
+		double fSlow0 = (double(fHslider0) + 3.1415926535898002);
+		double fSlow1 = std::cos((1.5707963267948966 - double(fHslider1)));
+		double fSlow2 = mydsp_faustpower2_f(fSlow1);
+		double fSlow3 = std::sqrt((1.0 - fSlow2));
+		double fSlow4 = (0.0 - fSlow3);
+		double fSlow5 = (std::sin(fSlow0) * fSlow4);
+		double fSlow6 = (fConst2 * fSlow5);
+		double fSlow7 = (1.7320508075688772 * fSlow1);
+		double fSlow8 = (fSlow4 * std::cos(fSlow0));
+		double fSlow9 = (fConst2 * fSlow8);
+		double fSlow10 = (2.0 * fSlow0);
+		double fSlow11 = (0.0 - (3.0 * fSlow3));
+		double fSlow12 = ((std::sin(fSlow10) * fSlow4) * fSlow11);
+		double fSlow13 = (fConst4 * fSlow12);
+		double fSlow14 = (fConst7 * (fSlow5 * fSlow1));
+		double fSlow15 = ((3.0 * fSlow2) + -1.0);
+		double fSlow16 = (1.1180339887498949 * fSlow15);
+		double fSlow17 = (fConst7 * (fSlow8 * fSlow1));
+		double fSlow18 = ((std::cos(fSlow10) * fSlow4) * fSlow11);
+		double fSlow19 = (fConst4 * fSlow18);
+		double fSlow20 = (3.0 * fSlow0);
+		double fSlow21 = (0.0 - (5.0 * fSlow3));
+		double fSlow22 = (((std::sin(fSlow20) * fSlow4) * fSlow11) * fSlow21);
+		double fSlow23 = (fConst9 * fSlow22);
+		double fSlow24 = (fConst11 * (fSlow12 * fSlow1));
+		double fSlow25 = ((15.0 * fSlow2) + -3.0);
+		double fSlow26 = (fConst12 * (fSlow5 * fSlow25));
+		double fSlow27 = ((2.5 * fSlow15) + -2.0);
+		double fSlow28 = (0.88191710368819687 * (fSlow27 * fSlow1));
+		double fSlow29 = (fConst12 * (fSlow8 * fSlow25));
+		double fSlow30 = (fConst11 * (fSlow18 * fSlow1));
+		double fSlow31 = (((std::cos(fSlow20) * fSlow4) * fSlow11) * fSlow21);
+		double fSlow32 = (fConst9 * fSlow31);
+		double fSlow33 = (4.0 * fSlow0);
+		double fSlow34 = (0.0 - (7.0 * fSlow3));
+		double fSlow35 = (fConst13 * ((((std::sin(fSlow33) * fSlow4) * fSlow11) * fSlow21) * fSlow34));
+		double fSlow36 = (fConst14 * (fSlow22 * fSlow1));
+		double fSlow37 = ((35.0 * fSlow2) + -5.0);
+		double fSlow38 = (fConst15 * (fSlow12 * fSlow37));
+		double fSlow39 = ((3.5 * fSlow25) + -12.0);
+		double fSlow40 = (fConst16 * ((fSlow5 * fSlow39) * fSlow1));
+		double fSlow41 = (0.75 * ((2.333333333333333 * (fSlow27 * fSlow2)) - (1.5 * fSlow15)));
+		double fSlow42 = (fConst16 * ((fSlow8 * fSlow39) * fSlow1));
+		double fSlow43 = (fConst15 * (fSlow18 * fSlow37));
+		double fSlow44 = (fConst14 * (fSlow31 * fSlow1));
+		double fSlow45 = (fConst13 * ((((std::cos(fSlow33) * fSlow4) * fSlow11) * fSlow21) * fSlow34));
 		for (int i = 0; (i < count); i = (i + 1)) {
-			float fTemp0 = float(input0[i]);
+			double fTemp0 = double(input0[i]);
 			output0[i] = FAUSTFLOAT(fTemp0);
 			output1[i] = FAUSTFLOAT((fSlow6 * fTemp0));
-			output2[i] = FAUSTFLOAT((fSlow1 * fTemp0));
-			output3[i] = FAUSTFLOAT((fSlow8 * fTemp0));
-			output4[i] = FAUSTFLOAT((fSlow12 * fTemp0));
-			output5[i] = FAUSTFLOAT((fSlow13 * fTemp0));
-			output6[i] = FAUSTFLOAT((fSlow15 * fTemp0));
-			output7[i] = FAUSTFLOAT((fSlow16 * fTemp0));
-			output8[i] = FAUSTFLOAT((fSlow18 * fTemp0));
-			output9[i] = FAUSTFLOAT((fSlow22 * fTemp0));
+			output2[i] = FAUSTFLOAT((fSlow7 * fTemp0));
+			output3[i] = FAUSTFLOAT((fSlow9 * fTemp0));
+			output4[i] = FAUSTFLOAT((fSlow13 * fTemp0));
+			output5[i] = FAUSTFLOAT((fSlow14 * fTemp0));
+			output6[i] = FAUSTFLOAT((fSlow16 * fTemp0));
+			output7[i] = FAUSTFLOAT((fSlow17 * fTemp0));
+			output8[i] = FAUSTFLOAT((fSlow19 * fTemp0));
+			output9[i] = FAUSTFLOAT((fSlow23 * fTemp0));
 			output10[i] = FAUSTFLOAT((fSlow24 * fTemp0));
 			output11[i] = FAUSTFLOAT((fSlow26 * fTemp0));
 			output12[i] = FAUSTFLOAT((fSlow28 * fTemp0));
@@ -931,20 +973,19 @@ class mydsp : public dsp {
 			output14[i] = FAUSTFLOAT((fSlow30 * fTemp0));
 			output15[i] = FAUSTFLOAT((fSlow32 * fTemp0));
 			output16[i] = FAUSTFLOAT((fSlow35 * fTemp0));
-			output17[i] = FAUSTFLOAT((fSlow37 * fTemp0));
-			output18[i] = FAUSTFLOAT((fSlow39 * fTemp0));
-			output19[i] = FAUSTFLOAT((fSlow41 * fTemp0));
-			output20[i] = FAUSTFLOAT((fSlow42 * fTemp0));
-			output21[i] = FAUSTFLOAT((fSlow43 * fTemp0));
-			output22[i] = FAUSTFLOAT((fSlow44 * fTemp0));
-			output23[i] = FAUSTFLOAT((fSlow45 * fTemp0));
-			output24[i] = FAUSTFLOAT((fSlow46 * fTemp0));
+			output17[i] = FAUSTFLOAT((fSlow36 * fTemp0));
+			output18[i] = FAUSTFLOAT((fSlow38 * fTemp0));
+			output19[i] = FAUSTFLOAT((fSlow40 * fTemp0));
+			output20[i] = FAUSTFLOAT((fSlow41 * fTemp0));
+			output21[i] = FAUSTFLOAT((fSlow42 * fTemp0));
+			output22[i] = FAUSTFLOAT((fSlow43 * fTemp0));
+			output23[i] = FAUSTFLOAT((fSlow44 * fTemp0));
+			output24[i] = FAUSTFLOAT((fSlow45 * fTemp0));
 			
 		}
 		
 	}
 
-	
 };
 
 //----------------------------------------------------------------------------

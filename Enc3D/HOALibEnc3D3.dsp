@@ -50,18 +50,28 @@ with
 		// The normalization
 		// If m  = 0 => k(l, m) = 1
 		// If m != 0 => k(l, m) = sqrt((l - abs(m))! / l + abs(m))!) * sqrt(2)
-		k(l, m) = kcalcul((m != 0), l, m)
-		with
-		{	
-			kcalcul(0, l, m) = 1;
-			kcalcul(1, l, m) = sqrt(fact(l - abs(m)) / fact(l + abs(m))) * sqrt(2)
-			with
-			{
-				fact(0) = 1;
-				fact(n) = n * fact(n-1);
-			};
-		};
+		
+		// k(l, m) = kcalcul((m != 0), l, m)
+		// with
+		// {	
+		//	kcalcul(0, l, m) = 1;
+		//	kcalcul(1, l, m) = sqrt(fact(l - abs(m)) / fact(l + abs(m))) * sqrt(2)
+		//	with
+		//	{
+		//		fact(0) = 1;
+		//		fact(n) = n * fact(n-1);
+		//	};
+		// };
 
+		// FACTORIAL [gamma­_function]
+		factorial(n) = gamma(n+1);
+
+		// N3D NORM taken from https://github.com/sekisushai/ambitools
+		k(m,n) =  sqrt((2*m+1)*factorial(m-abs(n))/factorial(m+abs(n)))*
+            		case{
+            		(0) => 1;
+            		(n) => sqrt(2);
+			}(n);	
 		
 	};
 };

@@ -2,8 +2,8 @@
 author: "Pierre Guillot, Eliott Paris, Julien Colafrancesco"
 copyright: "2012-2015 Guillot, Paris, Colafrancesco, CICM, Labex Arts H2H, U. Paris 8"
 name: "HOALibEnc3D1"
-Code generated with Faust 2.5.23 (https://faust.grame.fr)
-Compilation options: cpp, -scal -ftz 0
+Code generated with Faust 2.15.11 (https://faust.grame.fr)
+Compilation options: -double -ftz 0
 ------------------------------------------------------------ */
 
 #ifndef  __mydsp_H__
@@ -66,6 +66,7 @@ Compilation options: cpp, -scal -ftz 0
 #define __dsp__
 
 #include <string>
+#include <vector>
 
 #ifndef FAUSTFLOAT
 #define FAUSTFLOAT float
@@ -173,11 +174,11 @@ class dsp {
          *
          * @param date_usec - the timestamp in microsec given by audio driver.
          * @param count - the number of frames to compute
-         * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT samples (eiher float, double or quad)
-         * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT samples (eiher float, double or quad)
+         * @param inputs - the input audio buffers as an array of non-interleaved FAUSTFLOAT samples (either float, double or quad)
+         * @param outputs - the output audio buffers as an array of non-interleaved FAUSTFLOAT samples (either float, double or quad)
          *
          */
-        virtual void compute(double date_usec, int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) { compute(count, inputs, outputs); }
+        virtual void compute(double /*date_usec*/, int count, FAUSTFLOAT** inputs, FAUSTFLOAT** outputs) { compute(count, inputs, outputs); }
        
 };
 
@@ -229,6 +230,9 @@ class dsp_factory {
         virtual std::string getName() = 0;
         virtual std::string getSHAKey() = 0;
         virtual std::string getDSPCode() = 0;
+        virtual std::string getCompileOptions() = 0;
+        virtual std::vector<std::string> getLibraryList() = 0;
+        virtual std::vector<std::string> getIncludePathnames() = 0;
     
         virtual dsp* createDSPInstance() = 0;
     
@@ -360,8 +364,8 @@ class UI
 
 #include <algorithm>
 #include <map>
+#include <cstdlib>
 #include <string.h>
-#include <stdlib.h>
 
 /************************************************************************
  FAUST Architecture File
@@ -402,33 +406,33 @@ using std::min;
 
 struct XXXX_Meta : std::map<const char*, const char*>
 {
-    void declare(const char* key, const char* value) { (*this)[key]=value; }
+    void declare(const char* key, const char* value) { (*this)[key] = value; }
 };
 
 struct MY_Meta : Meta, std::map<const char*, const char*>
 {
-    void declare(const char* key, const char* value) { (*this)[key]=value; }
+    void declare(const char* key, const char* value) { (*this)[key] = value; }
 };
 
-inline int lsr(int x, int n)	{ return int(((unsigned int)x) >> n); }
+static int lsr(int x, int n) { return int(((unsigned int)x) >> n); }
 
-inline int int2pow2(int x)		{ int r = 0; while ((1<<r) < x) r++; return r; }
+static int int2pow2(int x) { int r = 0; while ((1<<r) < x) r++; return r; }
 
-inline long lopt(char* argv[], const char* name, long def)
+static long lopt(char* argv[], const char* name, long def)
 {
 	int	i;
-	for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return atoi(argv[i+1]);
+    for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return std::atoi(argv[i+1]);
 	return def;
 }
 
-inline bool isopt(char* argv[], const char* name)
+static bool isopt(char* argv[], const char* name)
 {
 	int	i;
 	for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return true;
 	return false;
 }
 
-inline const char* lopts(char* argv[], const char* name, const char* def)
+static const char* lopts(char* argv[], const char* name, const char* def)
 {
 	int	i;
 	for (i = 0; argv[i]; i++) if (!strcmp(argv[i], name)) return argv[i+1];
@@ -613,9 +617,12 @@ private:
 #define FAUSTFLOAT float
 #endif 
 
+/* link with : "" */
+#include <algorithm>
 #include <cmath>
+#include <math.h>
 
-float mydsp_faustpower2_f(float value) {
+static double mydsp_faustpower2_f(double value) {
 	return (value * value);
 	
 }
@@ -632,6 +639,7 @@ class mydsp : public dsp {
 	
  private:
 	
+	double fConst0;
 	FAUSTFLOAT fHslider0;
 	FAUSTFLOAT fHslider1;
 	int fSamplingFreq;
@@ -711,12 +719,13 @@ class mydsp : public dsp {
 	
 	virtual void instanceConstants(int samplingFreq) {
 		fSamplingFreq = samplingFreq;
+		fConst0 = (1.4142135623730951 * std::sqrt((3.0 * (double(tgamma(1.0)) / double(tgamma(3.0))))));
 		
 	}
 	
 	virtual void instanceResetUserInterface() {
-		fHslider0 = FAUSTFLOAT(0.0f);
-		fHslider1 = FAUSTFLOAT(0.0f);
+		fHslider0 = FAUSTFLOAT(0.0);
+		fHslider1 = FAUSTFLOAT(0.0);
 		
 	}
 	
@@ -728,6 +737,7 @@ class mydsp : public dsp {
 		classInit(samplingFreq);
 		instanceInit(samplingFreq);
 	}
+	
 	virtual void instanceInit(int samplingFreq) {
 		instanceConstants(samplingFreq);
 		instanceResetUserInterface();
@@ -737,6 +747,7 @@ class mydsp : public dsp {
 	virtual mydsp* clone() {
 		return new mydsp();
 	}
+	
 	virtual int getSampleRate() {
 		return fSamplingFreq;
 		
@@ -746,10 +757,10 @@ class mydsp : public dsp {
 		ui_interface->openVerticalBox("HOALibEnc3D1");
 		ui_interface->declare(&fHslider0, "1", "");
 		ui_interface->declare(&fHslider0, "unit", "rad");
-		ui_interface->addHorizontalSlider("azi", &fHslider0, 0.0f, -3.14159274f, 3.14159274f, 1.00000001e-07f);
+		ui_interface->addHorizontalSlider("azi", &fHslider0, 0.0, -3.1415926535898002, 3.1415926535898002, 9.9999999999999995e-08);
 		ui_interface->declare(&fHslider1, "2", "");
 		ui_interface->declare(&fHslider1, "unit", "rad");
-		ui_interface->addHorizontalSlider("ele", &fHslider1, 0.0f, -1.57079637f, 1.57079637f, 1.00000001e-07f);
+		ui_interface->addHorizontalSlider("ele", &fHslider1, 0.0, -1.5707963267949001, 1.5707963267949001, 9.9999999999999995e-08);
 		ui_interface->closeBox();
 		
 	}
@@ -760,23 +771,23 @@ class mydsp : public dsp {
 		FAUSTFLOAT* output1 = outputs[1];
 		FAUSTFLOAT* output2 = outputs[2];
 		FAUSTFLOAT* output3 = outputs[3];
-		float fSlow0 = (float(fHslider0) + 3.14159274f);
-		float fSlow1 = cosf((1.57079637f - float(fHslider1)));
-		float fSlow2 = (0.0f - sqrtf((1.0f - mydsp_faustpower2_f(fSlow1))));
-		float fSlow3 = (1.0f * (sinf(fSlow0) * fSlow2));
-		float fSlow4 = (1.0f * (fSlow2 * cosf(fSlow0)));
+		double fSlow0 = (double(fHslider0) + 3.1415926535898002);
+		double fSlow1 = std::cos((1.5707963267948966 - double(fHslider1)));
+		double fSlow2 = (0.0 - std::sqrt((1.0 - mydsp_faustpower2_f(fSlow1))));
+		double fSlow3 = (fConst0 * (std::sin(fSlow0) * fSlow2));
+		double fSlow4 = (1.7320508075688772 * fSlow1);
+		double fSlow5 = (fConst0 * (fSlow2 * std::cos(fSlow0)));
 		for (int i = 0; (i < count); i = (i + 1)) {
-			float fTemp0 = float(input0[i]);
+			double fTemp0 = double(input0[i]);
 			output0[i] = FAUSTFLOAT(fTemp0);
 			output1[i] = FAUSTFLOAT((fSlow3 * fTemp0));
-			output2[i] = FAUSTFLOAT((fSlow1 * fTemp0));
-			output3[i] = FAUSTFLOAT((fSlow4 * fTemp0));
+			output2[i] = FAUSTFLOAT((fSlow4 * fTemp0));
+			output3[i] = FAUSTFLOAT((fSlow5 * fTemp0));
 			
 		}
 		
 	}
 
-	
 };
 
 //----------------------------------------------------------------------------
