@@ -1,7 +1,7 @@
 declare name "HOALibEnc3D4";
 declare title "High Order Ambisonics library";
-declare author "Pierre Guillot, Eliott Paris, Julien Colafrancesco";
-declare copyright "2012-2015 Guillot, Paris, Colafrancesco, CICM, Labex Arts H2H, U. Paris 8";
+declare author "Pierre Guillot, Eliott Paris";
+declare copyright "2012-2015 Guillot, Paris, CICM, Labex Arts H2H, U. Paris 8";
 import("math.lib");
 
 process(x) = HoaEncoder3D(4, x, azi, elev);
